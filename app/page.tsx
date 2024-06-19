@@ -1,95 +1,122 @@
-import Image from "next/image";
+'use client'
 import styles from "./page.module.css";
+import { useEffect, useState } from "react";
+import { getCatalogApi, getFiltersApi } from "./api";
+import { CustomSelect } from "./components/CustomSelect/CustomSelect";
+import { useSelector } from "react-redux";
+import { CardWrapper } from "./components/CardWrapper/CardWrapper";
+import { AppInterface, filtrationModels } from "./store/slices/filterSlice";
+import { useDispatch } from "react-redux";
 
 export default function Home() {
+  const dispatch = useDispatch()
+  const state: any = useSelector<AppInterface>(state => state)
+  const [filtersBrand, setFIltersBrand] = useState<IFiltersBrand>()
+  const [filtersModels, setFiltersModels] = useState<IFiltersModel>()
+  const [filtersTariff, setFiltersTariff] = useState<IFiltersTariff>()
+
+  const [catalogList, setCatalogList] = useState<ICarList>()
+
+  useEffect(() => {
+    getFiltersApi().then(res => {
+      setFIltersBrand(res.brands)
+      setFiltersModels(res.models)
+      setFiltersTariff(res.tarif)
+    })
+  }, [])
+  
+  useEffect(() => {
+    if(filtersBrand && filtersModels && filtersTariff) {
+      const modelsArray:any = filtersModels?.values.reduce<any>((acc, item) => {
+        return acc.concat(item.models);
+      }, []);
+      
+      getCatalogApi({
+        brand: state.checkedBrands.length === 0 ? filtersBrand?.values : state.checkedBrands, 
+        models: state.checkedModels.length === 0 ? modelsArray : state.checkedBrands, 
+        tarif: state.checkedTariffs.length === 0 ? Object.values(filtersTariff.values) : state.checkedTariffs,
+        page: state.currentPage
+      })
+        .then(res => setCatalogList(res))
+    }
+  }, [filtersBrand, filtersModels, filtersTariff])
+
+  useEffect(() => {
+    if (filtersModels) {
+      if (state.checkedBrands.length > 0) {
+        const filteredModels: any = filtersModels.values.filter((model) =>
+          state.checkedBrands.includes(model.brand)
+        );
+        const allModels: string[] = filteredModels.reduce(
+          (acc: string[], obj: any) => [...acc, ...obj.models],
+          []
+        );
+        dispatch(filtrationModels(allModels))  
+      } else {
+        const filteredModels: any = filtersModels.values.filter((model) =>
+          filtersBrand?.values.includes(model.brand)
+        );
+        const allModels: string[] = filteredModels.reduce(
+          (acc: string[], obj: any) => [...acc, ...obj.models],
+          []
+        );
+        dispatch(filtrationModels(allModels))
+      }
+    }
+  }, [state.checkedBrands]);
+
+  useEffect(() => {
+    if(filtersBrand && filtersModels && filtersTariff) {
+      const modelsArray:any = filtersModels?.values.reduce<any>((acc, item) => {
+        return acc.concat(item.models);
+      }, []);
+      
+      getCatalogApi({
+        brand: state.checkedBrands.length === 0 ? filtersBrand.values : state.checkedBrands, 
+        page: state.currentPage,
+        tarif: state.checkedTariffs.length === 0 && filtersTariff ? Object.values(filtersTariff.values) : state.checkedTariffs,
+        models: state.checkedModels.length === 0 ? modelsArray : state.checkedModels})
+        .then(res => setCatalogList(res))
+        
+    }
+  }, [state])
+
+  const modelsArray:any = filtersModels?.values.reduce<any>((acc, item) => {
+    return acc.concat(item.models);
+  }, []);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main>
+      <div>
+        {
+          filtersBrand && filtersModels && filtersTariff ?
+            <div className={styles.filters}>
+              <div className={styles.oneFilter}>
+                <span>Марка</span>
+                <CustomSelect data={filtersBrand?.values} title={filtersBrand?.name} type={filtersBrand?.code} />
+              </div>
+              <div className={styles.oneFilter}>
+                <span>Модель</span>
+                <CustomSelect data={state.checkedBrands.length !== 0 ? state.filteredModels : modelsArray }
+                  title={filtersModels?.name}
+                  type={filtersModels?.type} />
+              </div>
+
+              <div className={styles.oneFilter}>
+                <span>Тариф</span>
+                <CustomSelect type={filtersTariff.type} title={filtersTariff.name}
+                  data={Object.values(filtersTariff.values)}
+
+                />
+              </div>
+            </div> : <div>loading</div>
+        }
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      {
+        catalogList ? <div className={styles.mainBlock}>
+          <CardWrapper data={catalogList} />
+        </div> : <div>loading</div>
+      }
     </main>
   );
 }

@@ -1,0 +1,21 @@
+.cardWrapper {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    box-shadow: 1px 1px 10px silver;
+    border: 1px solid silver;
+    height: 150px;
+}
+.cardWrapper img {
+    width: 250px;
+    height: 150px;
+}
+.brand {
+    font-size: .9rem;
+    color: rgb(163, 161, 161);
+}
+.mainCard {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px 0 0;
+}

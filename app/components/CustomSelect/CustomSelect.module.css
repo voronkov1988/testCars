@@ -1,0 +1,46 @@
+.btnAdd {
+    width: 100%;
+    background-color: rgb(187, 143, 143);
+    user-select: none;
+    position: relative;
+}
+
+.btnAddBlock {
+    position: relative;
+}
+
+.btnAddBlock button {
+    border: none;
+    background-color: transparent;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.addBlockButtons {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    width: 100%;
+    text-align: left;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.addBlockButtons span {
+    padding: 5px 20px;
+    cursor: pointer;
+}
+
+.addBlockButtons span:nth-child(odd) {
+    background-color: #fff;
+}
+
+.addBlockButtons span:nth-child(even) {
+    background-color: #f6f6f6;
+}
+
+.addBlockButtons span:hover {
+    background-color: #e4e4e4;
+}
